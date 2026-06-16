@@ -32,15 +32,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}     # ← 內建 token，免設
 
+# 💡 核心解法：在這裡將帳號名稱轉為全小寫，並存入環境變數 env.OWNER_LC
+      - name: Downcase REPO owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> $GITHUB_ENV
+        env:
+          OWNER: ${{ github.repository_owner }}
+
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          # 💡 修改這裡：將原本的 ${{ github.repository_owner }} 改成 ${{ env.OWNER_LC }}
           tags: |
-            ghcr.io/Graylee0128/devops-demo:${{ github.sha }}
-            ghcr.io/Graylee0128/devops-demo:latest
-
+            ghcr.io/${{ env.OWNER_LC }}/devops-demo:latest
+            ghcr.io/${{ env.OWNER_LC }}/devops-demo:${{ github.sha }}
       - name: Update Config Repo
         env:
           CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
